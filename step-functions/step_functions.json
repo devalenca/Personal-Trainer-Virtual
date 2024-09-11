@@ -1,0 +1,67 @@
+{
+    "Comment": "Definição de Step Function para o Personal Trainer Virtual.",
+    "StartAt": "Invoke model with first prompt",
+    "States": {
+      "Invoke model with first prompt": {
+        "Type": "Task",
+        "Resource": "arn:aws:states:::lambda:invoke",
+        "Parameters": {
+          "FunctionName": "arn:aws:lambda:region:account-id:function:personalTrainerFunction",
+          "Payload": {
+            "prompt": "prompt_one"
+          }
+        },
+        "Next": "Add first result to conversation history",
+        "ResultPath": "$.result_one",
+        "ResultSelector": {
+          "result_one.$": "$.Payload.body"
+        }
+      },
+      "Add first result to conversation history": {
+        "Type": "Pass",
+        "Next": "Invoke model with second prompt",
+        "Parameters": {
+          "convo_one.$": "States.Format('{}\n{}', $.prompt_one, $.result_one)"
+        },
+        "ResultPath": "$.convo_one"
+      },
+      "Invoke model with second prompt": {
+        "Type": "Task",
+        "Resource": "arn:aws:states:::lambda:invoke",
+        "Parameters": {
+          "FunctionName": "arn:aws:lambda:region:account-id:function:personalTrainerFunction",
+          "Payload": {
+            "prompt": "prompt_two"
+          }
+        },
+        "Next": "Add second result to conversation history",
+        "ResultSelector": {
+          "result_two.$": "$.Payload.body"
+        },
+        "ResultPath": "$.result_two"
+      },
+      "Add second result to conversation history": {
+        "Type": "Pass",
+        "Next": "Invoke model with third prompt",
+        "Parameters": {
+          "convo_two.$": "States.Format('{}\n{}\n{}', $.convo_one, $.prompt_two, $.result_two)"
+        },
+        "ResultPath": "$.convo_two"
+      },
+      "Invoke model with third prompt": {
+        "Type": "Task",
+        "Resource": "arn:aws:states:::lambda:invoke",
+        "Parameters": {
+          "FunctionName": "arn:aws:lambda:region:account-id:function:personalTrainerFunction",
+          "Payload": {
+            "prompt": "prompt_three"
+          }
+        },
+        "End": true,
+        "ResultSelector": {
+          "result_three.$": "$.Payload.body"
+        }
+      }
+    }
+  }
+  

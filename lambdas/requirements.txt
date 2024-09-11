@@ -1,0 +1,2 @@
+# Dependências para a função Lambda
+boto3
